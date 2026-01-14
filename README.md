@@ -34,8 +34,8 @@ Requires Node.js 18+. Electron is installed automatically as a dependency.
 ```bash
 git clone https://github.com/langchain-ai/openwork.git
 cd openwork
-pnpm install
-pnpm run dev
+npm install
+npm run dev
 ```
 
 ## Configuration
@@ -101,13 +101,13 @@ openwork is built with:
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
 # Start development server
-pnpm run dev
+npm run dev
 
 # Build for production
-pnpm run build
+npm run build
 ```
 
 ## Releases
