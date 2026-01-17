@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { createDeepAgent } from 'deepagents'
+import { createDeepAgent, createSettings, createSkillsMiddleware } from 'deepagents'
+import { createBrowserTools } from './tools-example-browser'
 import { getDefaultModel } from '../ipc/models'
 import { getApiKey, getCheckpointDbPath } from '../storage'
 import { ChatAnthropic } from '@langchain/anthropic'
@@ -144,18 +145,35 @@ export async function createAgentRuntime(options: CreateAgentRuntimeOptions) {
 
 The workspace root is: ${workspacePath}`
 
+  // Create settings for skills detection (based on workspace root)
+  const settings = createSettings({ startPath: workspacePath });
+
+  // Create skills middleware
+  const skillsMiddleware = createSkillsMiddleware({
+    // Look for user skills in ~/.deepagents/openwork/skills
+    skillsDir: settings.getUserSkillsDir('openwork'),
+    assistantId: 'openwork-agent',
+    // Look for project skills in {workspacePath}/.deepagents/skills
+    projectSkillsDir: settings.getProjectSkillsDir() || undefined
+  });
+
   const agent = createDeepAgent({
     model,
     checkpointer,
     backend,
     systemPrompt,
     // Custom filesystem prompt for absolute paths (requires deepagents update)
-    filesystemSystemPrompt,
+    filesystemSystemPrompt, // Note: This might need adjustment if using middleware heavily
+    // Add Browser Tool
+    tools: [...createBrowserTools()],
+    // Add Skills Middleware
+    middleware: [skillsMiddleware],
     // Require human approval for all shell commands
     interruptOn: { execute: true }
   } as Parameters<typeof createDeepAgent>[0])
 
   console.log('[Runtime] Deep agent created with LocalSandbox at:', workspacePath)
+  console.log('[Runtime] Skills middleware enabled.')
   return agent
 }
 
